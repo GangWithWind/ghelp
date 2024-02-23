@@ -1,2 +1,2 @@
 $GhelpPath = $env:GhelpPath
-python $GhelpPath\python\gtools.py $args
+python $GhelpPath\python\ghelp.py $args

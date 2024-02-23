@@ -25,7 +25,7 @@ def bunch(args):
 def show_list(_):
     print("Wellcome to ghelp, here's a list of functions.")
     print("-----------")
-    print('gtools\tSome small tools.')
+    print('ghelp\tSome small tools.')
     print('g2fits\tTransfer output of genga to fits file.')
     print('gdisk\tMake genga configration files for disk.')
     print('gvideo\tMake video to demonstrate the output.')
