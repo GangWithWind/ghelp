@@ -1,0 +1,1 @@
+python $GhelpPath\python\gvideo.py $args

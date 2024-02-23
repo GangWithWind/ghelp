@@ -1,0 +1,1 @@
+python $GhelpPath\python\gdisk.py $args
