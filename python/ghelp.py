@@ -6,7 +6,8 @@ def update(_):
     repo = git.Repo(os.path.dirname(folder))
     remote = repo.remote()
     info = remote.pull()
-    print(info)
+    for item in info:
+        print(item)
 
 def bunch(args):
     import glob
