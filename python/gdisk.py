@@ -3,6 +3,40 @@ import yaml
 import os
 from g2fits import log
 
+def random_from_pdf(pd_func, inner, outer, sample_num=100):
+    """Generate random number from arbitrary probability density function
+    
+    Parameters
+    ----------
+    pd_func: callable
+        Probability density function f(x). The function need to accept numpy.array and return a numpy.array.
+    inner: float
+        Inner boundary of the probability density function.
+    outer: float
+        Outer boundary of the probability density function.
+    sample_num: int, default: 100
+        Number of samples to generate.
+    
+    Returns
+    -------
+    numpy.ndarray
+        Random numbers with count equal to `sample_num`.
+    """
+
+
+    x = np.linspace(inner, outer, 1000)
+    pdf = pd_func(x)
+    pdf_max = pdf.max()
+
+    output = []
+    while len(output) < sample_num:
+        x = np.random.rand() * (outer - inner) + inner
+        y = np.random.rand() * pdf_max
+        if y < pd_func(x):
+            output.append(x)
+    
+    return np.array(output)
+
         
 if __name__ == "__main__":
     import argparse
@@ -58,14 +92,17 @@ if __name__ == "__main__":
     pl_i = args.get('planet_i', default['planet_i'])
     pl_e = args.get('planet_e', default['planet_e'])
 
+
     default_name = f'm{pl_mass:.1f}a{pl_a:.1f}i{pl_i:.0f}d{disk_mass:.0f}'
     default_name = default_name.replace('.0', '')
     default_name = default_name.replace('.', '_')
     output = args.get('output', default['name'])
     output = output.replace('$D', default_name)
     print(f'Writing config file {output}....')
-    
 
+    hill_radius = pl_a * (pl_mass / 3 / center_mass / 1000)**(1/3)
+    print(f'Hill radius {hill_radius:.2f} AU, Hill region [{pl_a - 3 * hill_radius:.2f}, {pl_a + 3 * hill_radius:.2f}]')
+    
     aout = disk_out * 1.5e13 #AU to cm
     dmass = disk_mass * 6.0e27 #earth mass to g
     sigma0 =  dmass / sigma0 / aout**2
@@ -114,20 +151,37 @@ if __name__ == "__main__":
     with open(f'{output}/param.dat', 'w') as fid:
         fid.write(param)
 
+
+    pdf = lambda x: (x/disk_out)**(-disk_profile) * x
+    ps_a = random_from_pdf(pdf, disk_in, disk_out, n_particle+1)
+
+    earth_mass = 330000
+    ps_mass = np.random.rand(n_particle+1)
+    
+    equal_mass = True
+    if equal_mass == True:
+        ps_mass = ps_mass * 0 + 1
+
+    ps_mass = ps_mass * disk_mass / ps_mass[1:].sum() / earth_mass # first particle is planet
+
+    ps_e = np.random.rayleigh(disk_e, size=n_particle+1)
+    ps_inc = np.random.randn(n_particle+1) * disk_i * np.pi / 180
+
     with open(f'{output}/particle.dat', 'w') as fid:
         for i_particle in range(n_particle + 1):
-            a = np.random.rand() * (disk_out - disk_in) + disk_in
-            e = np.random.rand() * disk_e
-            inc = np.random.rand() * disk_i * np.pi / 180
+            a = ps_a[i_particle]
+            e = ps_e[i_particle]
+            inc = ps_inc[i_particle]
             w = np.random.rand() * 2 * np.pi
             omega = np.random.rand() * 2 * np.pi
             orbit_m = np.random.rand() * 2 * np.pi
-            mass = disk_mass / n_particle / 330000
+            mass = ps_mass[i_particle] 
 
             if i_particle == 0:
                 mass = pl_mass * 1e-3
                 a = pl_a
                 inc = pl_i * np.pi / 180
-                e = pl_e 
+                e = pl_e
+                omega = 0
 
             fid.write(f'{mass} {a} {e} {inc} {omega} {w} {orbit_m} \n')

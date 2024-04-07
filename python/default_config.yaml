@@ -1,0 +1,16 @@
+center_mass: 1 #center mass [Msun]
+n_particle: 16383 #number of particles
+disk_mass: 1000  #diskmass [Mearth]
+disk_in: 20 #disk inner [AU]
+disk_out: 65 #disk outer [AU]
+disk_e: 0.025 #max eccentricty of particles
+disk_i: 1.43 #max inclination of particles [degree]
+disk_profile: 1 #disk surface density profile \Sigma * (r/r_out)^-p
+planet_mass: 2 #planet mass [Mjupiter]
+planet_a: 8 #planet semimajor axis [AU]
+planet_i: 15 #planet inclination [degree]
+planet_e: 0.03 #planet eccentricity
+name: "$P"
+t_end: 1000 #end of simulation [kyr]
+step_ratio: 20 #time step ratio, time_step = planet period / timestep_ratio
+interval: 1000 #output interval [yr]
