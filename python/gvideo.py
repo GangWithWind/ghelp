@@ -208,10 +208,11 @@ def make_pq_animation(name, fade=0.5, step=15, output='pq_evolution.mp4'):
         # f, ax = plt.subplots(2, 1, figsize=(6, 8))
         t, m, r, a, e, inc, Omega, w, T, E, M = aei[iyr, :, :].T
         plt.subplot(grid[:3, 0])
-        plt.scatter(inc/np.pi*180*np.cos(Omega), inc/np.pi*180*np.sin(Omega), s=m**0.5*1e3, c=a, alpha=0.8, vmin=25, vmax=60)
+        plt.scatter(inc/np.pi*180*np.cos(Omega), inc/np.pi*180*np.sin(Omega), s=m**0.5*1e3, c=a, alpha=0.8, vmin=45, vmax=150)
         
         plt.xlim([-30, 30])
         plt.ylim([-30, 30])
+
         plt.ylabel('$i \sin(\Omega)$')
         plt.xlabel('$i \cos(\Omega)$')
         plt.title(f'time = {t[0]/1000:.1f} kyr; index = {iyr}')
@@ -241,7 +242,7 @@ def make_pq_animation(name, fade=0.5, step=15, output='pq_evolution.mp4'):
         plt.plot(x_p[iyr-epoch:iyr], z_p[iyr-epoch:iyr], '-', linewidth=1, color='k')
         plt.xlabel('x (AU)')
         plt.ylabel('z (AU)')
-        plt.xlim([-80, 80])
+        plt.xlim([-150, 150])
         plt.ylim([-30, 30])
         plt.gca().set_aspect('equal')
         # plt.tight_layout()

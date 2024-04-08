@@ -105,8 +105,8 @@ if __name__ == "__main__":
     
     aout = disk_out * 1.5e13 #AU to cm
     dmass = disk_mass * 6.0e27 #earth mass to g
-    sigma0 =  dmass / sigma0 / aout**2
-    print(f'disk surface mass {sigma0:.2e} g/cm^2, {disk_mass/sigma0/disk_out**2:.2e}Me/AU^2')
+    sigma_g =  dmass / sigma0 / aout**2
+    print(f'disk surface mass {sigma_g:.2e} g/cm^2, {disk_mass/sigma0/disk_out**2:.2e}Me/AU^2')
 
 
     endtime = args.get('t_end', default['t_end'])
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     interval = int(interval_year * 365.25 / step)
     end_step = int(endtime * 365.25 * 1e3 / step)
 
-    print(f'period_min {period:.2f}yr, step {step/365.25:.2f}yr, output every {interval}step/{interval_year:.1f}yr, end at {end_step}step/{endtime:.2f}Myr')
+    print(f'period_min {period:.2f}yr, step {step/365.25:.2f}yr, output every {interval}step/{interval_year:.1f}yr, end at {end_step}step/{endtime:.2f}kyr')
 
     with open(f'{this_path}/param_tamplate.dat', 'r') as fid:
         param = fid.read()
