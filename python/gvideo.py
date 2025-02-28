@@ -192,6 +192,67 @@ class FFMpegWriter(object):
         output = output.format(mimetype, video)
 
         return output
+    
+
+def make_xy_animation(name, fade=0.5, step=15, output='xy_evolution.mp4'):
+    aei = fits.getdata(name + '/all_aei.fits')
+    xyz = fits.getdata(name + '/all_xyz.fits')
+
+    anim = FFMpegWriter(f'{name}/{output}.mp4', framerate=30)
+    p0 = None
+
+    for iyr in tqdm(range(0, aei.shape[0], step)):
+        plt.clf()
+        plt.figure(figsize=(6, 6))
+        grid = plt.GridSpec(5, 1, wspace=0.5, hspace=1)
+        # f, ax = plt.subplots(2, 1, figsize=(6, 8))
+        t, m, r, x, y, z, vx, vy, vz = xyz[iyr, :, :].T
+        plt.subplot(grid[:3, 0])
+        # plt.scatter(inc/np.pi*180*np.cos(Omega), inc/np.pi*180*np.sin(Omega), s=m**0.5*1e3, c=a, alpha=0.8, vmin=45, vmax=150)
+        plt.scatter(x, y, s=m**0.25*5e1, alpha=0.3, edgecolors='none')
+        plt.xlim([-100, 100])
+        plt.ylim([-100, 100])
+
+        plt.ylabel('x')
+        plt.xlabel('y')
+        plt.title(f'time = {t[0]/1000:.1f} kyr; index = {iyr}')
+        plt.gca().set_aspect('equal')
+        t_p, m_p, r_p, x_p, y_p, z_p, vx_p, vy_p, vz_p = xyz[:, 0, :].T
+        plt.plot(x_p[iyr-epoch:iyr], y_p[iyr-epoch:iyr], '-', linewidth=1, color='k')
+        # t_p, m_p, r_p, a_p, e_p, inc_p, Omega_p, w_p, T_p, E_p, M_p = aei[:, 0, :].T
+        # plt.plot(inc_p/np.pi*180*np.cos(Omega_p), inc_p/np.pi*180*np.sin(Omega_p), '-', linewidth=1, color='gray')
+        plt.colorbar(label='semi-major-axis')
+
+        plt.subplot(grid[3:, 0])
+        
+        plt.scatter(x, z, s=m**0.25*5e1, alpha=0.3, edgecolors='none')
+        # print(np.any(np.isnan(x)))
+        p = np.polyfit(x[~np.isnan(x)], z[~np.isnan(x)], deg=3)
+        if p0 is None:
+            p0 = p
+        else:
+            p0 = p0 * (1-fade) + p * fade
+
+        xi = np.linspace(-80, 80, 100)
+        plt.plot(xi, p0[0]*xi**3 + p0[1]*xi**2 + p0[2]*xi + p0[3], '--', color='C1')
+
+        
+        epoch = 100
+
+        plt.plot(x_p[iyr-epoch:iyr], z_p[iyr-epoch:iyr], '-', linewidth=1, color='k')
+        plt.xlabel('x (AU)')
+        plt.ylabel('z (AU)')
+        plt.xlim([-100, 100])
+        plt.ylim([-30, 30])
+        plt.gca().set_aspect('equal')
+        # plt.tight_layout()
+        # plt.axis('square')
+        anim.add_frame()
+        plt.close()
+
+    
+    anim.close()
+
 
 def make_pq_animation(name, fade=0.5, step=15, output='pq_evolution.mp4'):
     aei = fits.getdata(name + '/all_aei.fits')
