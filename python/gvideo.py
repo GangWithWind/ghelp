@@ -236,7 +236,6 @@ def make_xy_animation(name, fade=0.5, step=15, output='xy_evolution.mp4'):
         xi = np.linspace(-80, 80, 100)
         plt.plot(xi, p0[0]*xi**3 + p0[1]*xi**2 + p0[2]*xi + p0[3], '--', color='C1')
 
-        
         epoch = 100
 
         plt.plot(x_p[iyr-epoch:iyr], z_p[iyr-epoch:iyr], '-', linewidth=1, color='k')
