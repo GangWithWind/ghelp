@@ -2,7 +2,6 @@ import numpy as np
 import yaml
 import os
 from g2fits import log
-from scipy.interpolate import interp1d
 
 def random_from_pdf(pd_func, inner, outer, sample_num=100):
     """Generate random number from arbitrary probability density function
@@ -54,7 +53,6 @@ if __name__ == "__main__":
     parser.add_argument('--disk_e', type=float, help='max eccentricity of particles')
     parser.add_argument('--disk_i', type=float, help='max inclination of particles [degree]')
     parser.add_argument('--disk_profile', type=float, help='disk surface density profile \Sigma * (r/r_out)^-p')
-    parser.add_argument('--inc_profile', type=str, help='disk inclination profile file, text file containing three columns: r, inc * sin(omega), inc * cos(omega). Unit of inc is Rad')
     parser.add_argument('--planet_mass', type=float, help='planet mass [Mjupiter]')
     parser.add_argument('--planet_a', type=float, help='planet semimajor axis [AU]')
     parser.add_argument('--planet_i', type=float, help='planet inclination [degree]')
@@ -85,9 +83,6 @@ if __name__ == "__main__":
     disk_e = args.get('disk_e', default['disk_e'])
     disk_i = args.get('disk_i', default['disk_i'])
     disk_profile = args.get('disk_profile', default['disk_profile'])
-    pq_profile = args.get('inc_profile', default['inc_profile'])
-    if pq_profile == 'None':
-        pq_profile = None
 
     sigma0 = 2 * np.pi / (2 - disk_profile) \
         * (1 - (disk_out / disk_in)**(disk_profile - 2))
@@ -107,10 +102,10 @@ if __name__ == "__main__":
 
     hill_radius = pl_a * (pl_mass / 3 / center_mass / 1000)**(1/3)
     print(f'Hill radius {hill_radius:.2f} AU, Hill region [{pl_a - 3 * hill_radius:.2f}, {pl_a + 3 * hill_radius:.2f}]')
-    
-    aout = disk_out * 1.5e13 #AU to cm
-    dmass = disk_mass * 6.0e27 #earth mass to g
-    sigma_g =  dmass / sigma0 / aout**2
+
+    aout = disk_out * 1.5e13  #AU to cm
+    dmass = disk_mass * 6.0e27  #earth mass to g
+    sigma_g = dmass / sigma0 / aout**2
     print(f'disk surface mass {sigma_g:.2e} g/cm^2, {disk_mass/sigma0/disk_out**2:.2e}Me/AU^2')
 
 
@@ -156,6 +151,7 @@ if __name__ == "__main__":
     with open(f'{output}/param.dat', 'w') as fid:
         fid.write(param)
 
+
     pdf = lambda x: (x/disk_out)**(-disk_profile) * x
     ps_a = random_from_pdf(pdf, disk_in, disk_out, n_particle+1)
 
@@ -171,11 +167,6 @@ if __name__ == "__main__":
     ps_e = np.random.rayleigh(disk_e, size=n_particle+1)
     ps_inc = np.random.randn(n_particle+1) * disk_i * np.pi / 180
 
-    if pq_profile is not None:
-        pq_profile = np.loadtxt(pq_profile)
-        p_func = interp1d(pq_profile[:, 0], pq_profile[:, 1], fill_value='extrapolate')
-        q_func = interp1d(pq_profile[:, 0], pq_profile[:, 2], fill_value='extrapolate')
-    
     with open(f'{output}/particle.dat', 'w') as fid:
         for i_particle in range(n_particle + 1):
             a = ps_a[i_particle]
@@ -183,15 +174,8 @@ if __name__ == "__main__":
             inc = ps_inc[i_particle]
             w = np.random.rand() * 2 * np.pi
             omega = np.random.rand() * 2 * np.pi
-
-            if pq_profile is not None:
-                pa = p_func(a) + inc * np.sin(omega)
-                qa = q_func(a) + inc * np.cos(omega)
-                inc = np.sqrt(pa**2 + qa**2)
-                omega = np.arctan2(pa, qa)
-
             orbit_m = np.random.rand() * 2 * np.pi
-            mass = ps_mass[i_particle] 
+            mass = ps_mass[i_particle]
 
             if i_particle == 0:
                 mass = pl_mass * 1e-3

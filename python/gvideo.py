@@ -249,7 +249,7 @@ def make_xy_animation(name, fade=0.5, step=15, output='xy_evolution.mp4'):
         anim.add_frame()
         plt.close()
 
-    
+
     anim.close()
 
 
